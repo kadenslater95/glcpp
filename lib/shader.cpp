@@ -18,6 +18,8 @@ GLuint compileShader(std::string shaderPath, GLenum shaderType) {
     std::string shaderSource = buffer.str();
     const char *shaderSourcePtr = shaderSource.c_str();
 
+    shader_fstream.close();
+
     GLuint shader = glCreateShader(shaderType);
     glShaderSource(shader, 1, &shaderSourcePtr, NULL);
 
