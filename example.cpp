@@ -142,11 +142,7 @@ void init() {
 }
 
 
-void displayFunc() {
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    glUseProgram(shaderProgram);
-
+void prepUniforms() {
     float fov = M_PI / 4.0f;
     float aspect = 1.0f;
     float near = 0.1f;
@@ -242,6 +238,15 @@ void displayFunc() {
         objectColorLoc,
         1,
         objectColor);
+}
+
+
+void displayFunc() {
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glUseProgram(shaderProgram);
+
+    prepUniforms();
 
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 3);
