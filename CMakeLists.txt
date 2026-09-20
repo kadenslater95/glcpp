@@ -9,6 +9,8 @@ find_package(GLEW REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(Eigen3 REQUIRED NO_MODULE)
 
+add_subdirectory(lib)
+
 add_executable(example
   example.cpp
 )
@@ -18,4 +20,5 @@ target_link_libraries(example PRIVATE
   GLEW::GLEW
   GLUT::GLUT
   Eigen3::Eigen
+  shader
 )
