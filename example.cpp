@@ -1,12 +1,14 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
+// Copyright 2026 Kaden Slater
 
 #include <GL/glew.h>
 #include <GL/glut.h>
 
 #include <Eigen/Dense>
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
 
 
 GLuint shaderProgram, VAO;
@@ -30,7 +32,7 @@ int main(int argc, char** argv) {
     glutInitWindowPosition(100, 150);
     glutCreateWindow("glcpp");
 
-    if(glewInit() != GLEW_OK) {
+    if (glewInit() != GLEW_OK) {
         std::cerr << "Failed to initialize GLEW!" << "\n";
         return -1;
     }
@@ -48,9 +50,9 @@ int main(int argc, char** argv) {
 GLuint compileShader(std::string shaderPath, GLenum shaderType) {
     std::ifstream shader_fstream(shaderPath);
 
-    if(!shader_fstream.is_open()) {
+    if (!shader_fstream.is_open()) {
         std::cerr << "Failed to open shader source file!" << "\n";
-        return 0; // Note: glCreateShader returns 0 for error
+        return 0;  // Note: glCreateShader returns 0 for error
     }
 
     std::stringstream buffer;
@@ -90,17 +92,28 @@ void initGeometry() {
     glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void *) 0);
+    glVertexAttribPointer(
+        0,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        3*sizeof(float),
+        (const void *) 0);
     glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(normals), normals, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void *) 0);
+    glVertexAttribPointer(
+        1,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        3*sizeof(float),
+        (const void *) 0);
     glEnableVertexAttribArray(1);
 
-    // Unselect any vertex buffer object or attribute pointer array (they start at index 1) as the final cleanup
-    // of initialization so we don't accidentally set something somewhere else unexpectedly
+    // Unselect any vertex buffer object or attribute pointer array
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
@@ -115,16 +128,19 @@ void initGeometry() {
         modelLoc,
         1,
         GL_FALSE,
-        . . .
-    );
+        . . .);
 }
 
 
 void init() {
     glClearColor(0.0, 0.0, 0.0, 0.0);
 
-    GLuint vertexShader = compileShader("shaders/perspective.vert", GL_VERTEX_SHADER);
-    GLuint fragmentShader = compileShader("shaders/blinn_phong.frag", GL_FRAGMENT_SHADER);
+    GLuint vertexShader = compileShader(
+        "shaders/perspective.vert",
+        GL_VERTEX_SHADER);
+    GLuint fragmentShader = compileShader(
+        "shaders/blinn_phong.frag",
+        GL_FRAGMENT_SHADER);
 
     shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
