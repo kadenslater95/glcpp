@@ -1,39 +1,23 @@
 #version 330 core
 
-varying vec3 vPos;
-varying vec3 vNormal;
-
-out vec4 FragColor;
-
-void main() {
-    FragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-}
-
-
-/*
-#version 100
-
 precision mediump float;
 
-// Uses Blinn-Phong Lighting
-
-varying vec3 vNormal;
 varying vec3 vWorldPosition;
+varying vec3 vNormal;
 
 uniform vec3 uLightPosition; // in world space
 uniform vec3 uCameraPosition; // in world space
 uniform vec3 uLightColor;
 uniform vec3 uObjectColor;
 
-void main() {
-    // Normalize interpolated normal
-    vec3 N = normalize(vNormal);
+out vec4 FragColor;
 
+void main() {
     // Direction from fragment to light
     vec3 L = normalize(uLightPosition - vWorldPosition);
 
     // Diffuse
-    float diff = max(dot(N, L), 0.0);
+    float diff = max(dot(vNormal, L), 0.0);
 
     // Ambient
     float ambientStrength = 0.1;
@@ -50,6 +34,5 @@ void main() {
 
     vec3 result = (ambient + diffuse + specular) * uObjectColor;
 
-    gl_FragColor = vec4(result, 1.0);
+    FragColor = vec4(result, 1.0);
 }
-*/

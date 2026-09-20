@@ -82,7 +82,20 @@ void initGeometry() {
         0.0f, 0.0f, -1.0f
     };
 
-    Eigen::Matrix4f model = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f model_mtx = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f normal_mtx = model_mtx.inverse().transpose();
+
+    Eigen::Matrix4f camera_mtx = Eigen::Matrix4f::Identity();
+
+    // Camera Position is <0, 0, -0.5>
+    camera_mtx(0, 0) = 0.0f;
+    camera_mtx(2, 0) = -0.05f;
+
+    // Camera Up is <0, 1, 0>
+    camera_mtx(2, 2) = 0.0f;
+    camera_mtx(2, 1) = 1.0f;
+
+    Eigen::Matrix4f projection_mtx = Eigen::Matrix4f::Identity();
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, VBOs);
@@ -128,7 +141,23 @@ void initGeometry() {
         modelLoc,
         1,
         GL_FALSE,
-        . . .);
+        model_mtx.data());
+    glUniformMatrix4fv(
+        modelLoc,
+        1,
+        GL_FALSE,
+        camera_mtx.data());
+    glUniformMatrix4fv(
+        modelLoc,
+        1,
+        GL_FALSE,
+        projection_mtx.data());
+
+    glUniformMatrix4fv(
+        modelLoc,
+        1,
+        GL_FALSE,
+        normal_mtx.data());
 }
 
 
