@@ -13,11 +13,11 @@ out vec3 vWorldPosition;
 out vec3 vNormal;
 
 void main() {
-    vec4 worldPosition = uModel * vec4(apos, 1.0);
+    vec4 worldPosition = uModel * vec4(aPos, 1.0);
 
     vWorldPosition = worldPosition.xyz;
 
-    vNormal = normalize(uNormalMatrix * aNormal);
+    vNormal = normalize(uNormalMatrix * vec4(aNormal, 1.0)).xyz;
 
     gl_Position = uProjection * uCamera * worldPosition;
 }

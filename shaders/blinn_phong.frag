@@ -2,8 +2,8 @@
 
 precision mediump float;
 
-varying vec3 vWorldPosition;
-varying vec3 vNormal;
+in vec3 vWorldPosition;
+in vec3 vNormal;
 
 uniform vec3 uCameraPosition; // in world space
 uniform vec3 uLightPosition; // in world space
@@ -28,7 +28,7 @@ void main() {
     float specularStrength = 0.5;
     vec3 V = normalize(uCameraPosition - vWorldPosition);
     vec3 H = normalize(L + V); // half vector
-    float spec = pow(max(dot(N, H), 0.0), 32.0);
+    float spec = pow(max(dot(vNormal, H), 0.0), 32.0);
 
     vec3 diffuse = diff * uLightColor;
     vec3 specular = specularStrength * spec * uLightColor;

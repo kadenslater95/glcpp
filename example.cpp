@@ -12,6 +12,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <vector>
 
 
 GLuint shaderProgram, VAO;
@@ -24,6 +25,7 @@ void initGeometry();
 void init();
 
 void displayFunc();
+void tick(int);
 
 
 int main(int argc, char** argv) {
@@ -43,6 +45,8 @@ int main(int argc, char** argv) {
     init();
 
     glutDisplayFunc(displayFunc);
+
+    glutTimerFunc(16, tick, 0);
 
     glutMainLoop();
 
@@ -66,7 +70,19 @@ GLuint compileShader(std::string shaderPath, GLenum shaderType) {
 
     GLuint shader = glCreateShader(shaderType);
     glShaderSource(shader, 1, &shaderSourcePtr, NULL);
+
+    GLint isCompiled = 0;
     glCompileShader(shader);
+
+    if (isCompiled == GL_FALSE) {
+        GLint maxLength = 0;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
+
+        std::vector<GLchar> errorLog(maxLength);
+        glGetShaderInfoLog(shader, maxLength, &maxLength, &errorLog[0]);
+
+        std::cout << "GLSL Shader Info Log: " << &errorLog[0] << "\n";
+    }
 
     return shader;
 }
@@ -74,15 +90,15 @@ GLuint compileShader(std::string shaderPath, GLenum shaderType) {
 
 void initGeometry() {
     float positions[] = {
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.0f, 0.25f, 0.0f
+        1.0f, 1.0f, -1.0f,
+        0.0f, -0.5f, -1.0f,
+        -1.0f, 1.0f, -1.0f
     };
 
     float normals[] = {
-        0.0f, 0.0f, -1.0f,
-        0.0f, 0.0f, -1.0f,
-        0.0f, 0.0f, -1.0f
+        0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 1.0f
     };
 
     glGenVertexArrays(1, &VAO);
@@ -120,18 +136,18 @@ void initGeometry() {
 }
 
 
-void initUniforms() {
+void initUniforms(float t) {
     float fov = M_PI / 4.0f;
     float aspect = 1.0f;
     float near = 0.1f;
     float far = 100.0;
 
     float cameraPosition[] = {
-        0.0f, 0.0f, -15.0f
+        0.0f, 0.0f, 0.0f
     };
 
     float lightPosition[] = {
-        -15.0f, 10.0f, -15.0f
+        0.0f, 1.0f, 0.0f
     };
 
     float lightColor[] = {
@@ -143,17 +159,30 @@ void initUniforms() {
     };
 
     Eigen::Matrix4f modelMtx = Eigen::Matrix4f::Identity();
+
+    // modelMtx.block<3, 3>(0, 0) = Eigen::AngleAxisf(
+    //     t,
+    //     Eigen::Vector3f::UnitY()).toRotationMatrix();
+
     Eigen::Matrix4f normalMtx = modelMtx.inverse().transpose();
 
-    Eigen::Matrix4f cameraMtx = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f cameraMtx = Eigen::Matrix4f::Zero();
 
     cameraMtx(0, 0) = cameraPosition[0];
     cameraMtx(1, 0) = cameraPosition[1];
     cameraMtx(2, 0) = cameraPosition[2];
 
+    // Camera Direction is <0, 0, -1>
+    cameraMtx(1, 0) = 0.0f;
+    cameraMtx(1, 1) = 0.0f;
+    cameraMtx(1, 2) = -1.0f;
+
     // Camera Up is <0, 1, 0>
-    cameraMtx(2, 2) = 0.0f;
+    cameraMtx(2, 0) = 0.0f;
     cameraMtx(2, 1) = 1.0f;
+    cameraMtx(2, 2) = 0.0f;
+
+    cameraMtx(3, 3) = 1.0f;
 
     Eigen::Matrix4f projectionMtx = Eigen::Matrix4f::Zero();
 
@@ -238,19 +267,27 @@ void init() {
     glDeleteShader(fragmentShader);
 
     initGeometry();
-
-    glUseProgram(shaderProgram);
-
-    initUniforms();
-
-    glBindVertexArray(VAO);
 }
 
+float t = 0.0f;
+float dt = 0.025f;
+void tick(int) {
+    glutPostRedisplay();
+    glutTimerFunc(16, tick, 0);
+}
 
 void displayFunc() {
     glClear(GL_COLOR_BUFFER_BIT);
 
+    glUseProgram(shaderProgram);
+
+    initUniforms(t);
+
+    glBindVertexArray(VAO);
+
     glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    t += dt;
 
     glutSwapBuffers();
 }
