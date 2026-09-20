@@ -130,7 +130,7 @@ void initGeometry() {
     projectionMtx(2, 3) = -2.0f * far * near / (far - near);
 
     glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, VBOs);
+    glGenBuffers(2, VBOs);
 
     glBindVertexArray(VAO);
 
