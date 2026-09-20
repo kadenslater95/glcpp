@@ -90,9 +90,9 @@ GLuint compileShader(std::string shaderPath, GLenum shaderType) {
 
 void initGeometry() {
     float positions[] = {
-        1.0f, 1.0f, -1.0f,
-        0.0f, -0.5f, -1.0f,
-        -1.0f, 1.0f, -1.0f
+        1.0f, 1.0f, -5.0f,
+        0.0f, -0.5f, -5.0f,
+        -1.0f, 1.0f, -5.0f
     };
 
     float normals[] = {
@@ -160,29 +160,30 @@ void initUniforms(float t) {
 
     Eigen::Matrix4f modelMtx = Eigen::Matrix4f::Identity();
 
-    // modelMtx.block<3, 3>(0, 0) = Eigen::AngleAxisf(
-    //     t,
-    //     Eigen::Vector3f::UnitY()).toRotationMatrix();
+    modelMtx.block<3, 3>(0, 0) = Eigen::AngleAxisf(
+        t,
+        Eigen::Vector3f::UnitZ()).toRotationMatrix();
 
     Eigen::Matrix4f normalMtx = modelMtx.inverse().transpose();
 
-    Eigen::Matrix4f cameraMtx = Eigen::Matrix4f::Zero();
+    Eigen::Matrix4f cameraMtx = Eigen::Matrix4f::Identity();
+    // Eigen::Matrix4f cameraMtx = Eigen::Matrix4f::Zero();
 
-    cameraMtx(0, 0) = cameraPosition[0];
-    cameraMtx(1, 0) = cameraPosition[1];
-    cameraMtx(2, 0) = cameraPosition[2];
+    // cameraMtx(0, 0) = cameraPosition[0];
+    // cameraMtx(1, 0) = cameraPosition[1];
+    // cameraMtx(2, 0) = cameraPosition[2];
 
-    // Camera Direction is <0, 0, -1>
-    cameraMtx(1, 0) = 0.0f;
-    cameraMtx(1, 1) = 0.0f;
-    cameraMtx(1, 2) = -1.0f;
+    // // Camera Direction is <0, 0, -1>
+    // cameraMtx(0, 1) = 0.0f;
+    // cameraMtx(1, 1) = 0.0f;
+    // cameraMtx(2, 1) = -1.0f;
 
-    // Camera Up is <0, 1, 0>
-    cameraMtx(2, 0) = 0.0f;
-    cameraMtx(2, 1) = 1.0f;
-    cameraMtx(2, 2) = 0.0f;
+    // // Camera Up is <0, 1, 0>
+    // cameraMtx(0, 2) = 0.0f;
+    // cameraMtx(1, 2) = 1.0f;
+    // cameraMtx(2, 2) = 0.0f;
 
-    cameraMtx(3, 3) = 1.0f;
+    // cameraMtx(3, 3) = 1.0f;
 
     Eigen::Matrix4f projectionMtx = Eigen::Matrix4f::Zero();
 
@@ -206,18 +207,18 @@ void initUniforms(float t) {
         GL_FALSE,
         modelMtx.data());
     glUniformMatrix4fv(
-        modelLoc,
+        cameraLoc,
         1,
         GL_FALSE,
         cameraMtx.data());
     glUniformMatrix4fv(
-        modelLoc,
+        projectionLoc,
         1,
         GL_FALSE,
         projectionMtx.data());
 
     glUniformMatrix4fv(
-        modelLoc,
+        normalMatrixLoc,
         1,
         GL_FALSE,
         normalMtx.data());
