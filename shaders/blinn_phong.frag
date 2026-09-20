@@ -5,8 +5,9 @@ precision mediump float;
 varying vec3 vWorldPosition;
 varying vec3 vNormal;
 
-uniform vec3 uLightPosition; // in world space
 uniform vec3 uCameraPosition; // in world space
+uniform vec3 uLightPosition; // in world space
+
 uniform vec3 uLightColor;
 uniform vec3 uObjectColor;
 

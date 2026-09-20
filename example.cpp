@@ -5,6 +5,9 @@
 
 #include <Eigen/Dense>
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -13,8 +16,8 @@
 
 GLuint shaderProgram, VAO;
 GLuint VBOs[2];
-GLint modelLoc, cameraLoc, projectionLoc;
-GLint normalMatrixLoc;
+GLint modelLoc, normalMatrixLoc, cameraLoc, projectionLoc;
+GLint lightPositionLoc, cameraPositionLoc, lightColorLoc, objectColorLoc;
 
 GLuint compileShader(const std::string, GLenum);
 void initGeometry();
@@ -82,20 +85,49 @@ void initGeometry() {
         0.0f, 0.0f, -1.0f
     };
 
-    Eigen::Matrix4f model_mtx = Eigen::Matrix4f::Identity();
-    Eigen::Matrix4f normal_mtx = model_mtx.inverse().transpose();
+    float fov = M_PI / 4.0f;
+    float aspect = 1.0f;
+    float near = 0.1f;
+    float far = 100.0;
 
-    Eigen::Matrix4f camera_mtx = Eigen::Matrix4f::Identity();
+    float cameraPosition[] = {
+        0.0f, 0.0f, -15.0f
+    };
 
-    // Camera Position is <0, 0, -0.5>
-    camera_mtx(0, 0) = 0.0f;
-    camera_mtx(2, 0) = -0.05f;
+    float lightPosition[] = {
+        -15.0f, 10.0f, -15.0f
+    };
+
+    float lightColor[] = {
+        0.8f, 0.8f, 0.8f
+    };
+
+    float objectColor[] = {
+        0.5f, 0.5f, 0.9f
+    };
+
+    Eigen::Matrix4f modelMtx = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f normalMtx = modelMtx.inverse().transpose();
+
+    Eigen::Matrix4f cameraMtx = Eigen::Matrix4f::Identity();
+
+    cameraMtx(0, 0) = cameraPosition[0];
+    cameraMtx(1, 0) = cameraPosition[1];
+    cameraMtx(2, 0) = cameraPosition[2];
 
     // Camera Up is <0, 1, 0>
-    camera_mtx(2, 2) = 0.0f;
-    camera_mtx(2, 1) = 1.0f;
+    cameraMtx(2, 2) = 0.0f;
+    cameraMtx(2, 1) = 1.0f;
 
-    Eigen::Matrix4f projection_mtx = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f projectionMtx = Eigen::Matrix4f::Zero();
+
+    projectionMtx(1, 1) = 1.0f / std::tan(fov / 2.0f);
+    projectionMtx(0, 0) = projectionMtx(1, 1) / aspect;
+    projectionMtx(2, 2) = -(far + near) / (far - near);
+
+    projectionMtx(3, 3) = 0.0f;
+    projectionMtx(3, 2) = -1.0f;
+    projectionMtx(2, 3) = -2.0f * far * near / (far - near);
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, VBOs);
@@ -141,23 +173,47 @@ void initGeometry() {
         modelLoc,
         1,
         GL_FALSE,
-        model_mtx.data());
+        modelMtx.data());
     glUniformMatrix4fv(
         modelLoc,
         1,
         GL_FALSE,
-        camera_mtx.data());
+        cameraMtx.data());
     glUniformMatrix4fv(
         modelLoc,
         1,
         GL_FALSE,
-        projection_mtx.data());
+        projectionMtx.data());
 
     glUniformMatrix4fv(
         modelLoc,
         1,
         GL_FALSE,
-        normal_mtx.data());
+        normalMtx.data());
+
+    cameraPositionLoc = glGetUniformLocation(shaderProgram, "uCameraPosition");
+    lightPositionLoc = glGetUniformLocation(shaderProgram, "uLightPosition");
+
+    lightColorLoc = glGetUniformLocation(shaderProgram, "uLightColor");
+    objectColorLoc = glGetUniformLocation(shaderProgram, "uObjectColor");
+
+    glUniform3fv(
+        cameraPositionLoc,
+        1,
+        cameraPosition);
+    glUniform3fv(
+        lightPositionLoc,
+        1,
+        lightPosition);
+
+    glUniform3fv(
+        lightColorLoc,
+        1,
+        lightColor);
+    glUniform3fv(
+        objectColorLoc,
+        1,
+        objectColor);
 }
 
 
