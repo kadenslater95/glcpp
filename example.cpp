@@ -85,6 +85,68 @@ void initGeometry() {
         0.0f, 0.0f, -1.0f
     };
 
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(2, VBOs);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(
+        0,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        3*sizeof(float),
+        (const void *) 0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(normals), normals, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(
+        1,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        3*sizeof(float),
+        (const void *) 0);
+    glEnableVertexAttribArray(1);
+
+    // Unselect any vertex buffer object or attribute pointer array
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+
+void init() {
+    glClearColor(0.0, 0.0, 0.0, 0.0);
+
+    GLuint vertexShader = compileShader(
+        "shaders/perspective.vert",
+        GL_VERTEX_SHADER);
+    GLuint fragmentShader = compileShader(
+        "shaders/blinn_phong.frag",
+        GL_FRAGMENT_SHADER);
+
+    shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    initGeometry();
+}
+
+
+void displayFunc() {
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glUseProgram(shaderProgram);
+
     float fov = M_PI / 4.0f;
     float aspect = 1.0f;
     float near = 0.1f;
@@ -128,40 +190,6 @@ void initGeometry() {
     projectionMtx(3, 3) = 0.0f;
     projectionMtx(3, 2) = -1.0f;
     projectionMtx(2, 3) = -2.0f * far * near / (far - near);
-
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(2, VBOs);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(
-        0,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        3*sizeof(float),
-        (const void *) 0);
-    glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(normals), normals, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(
-        1,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        3*sizeof(float),
-        (const void *) 0);
-    glEnableVertexAttribArray(1);
-
-    // Unselect any vertex buffer object or attribute pointer array
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
 
     modelLoc = glGetUniformLocation(shaderProgram, "uModel");
     cameraLoc = glGetUniformLocation(shaderProgram, "uCamera");
@@ -214,35 +242,6 @@ void initGeometry() {
         objectColorLoc,
         1,
         objectColor);
-}
-
-
-void init() {
-    glClearColor(0.0, 0.0, 0.0, 0.0);
-
-    GLuint vertexShader = compileShader(
-        "shaders/perspective.vert",
-        GL_VERTEX_SHADER);
-    GLuint fragmentShader = compileShader(
-        "shaders/blinn_phong.frag",
-        GL_FRAGMENT_SHADER);
-
-    shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    initGeometry();
-}
-
-
-void displayFunc() {
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    glUseProgram(shaderProgram);
 
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 3);
