@@ -71,8 +71,10 @@ GLuint compileShader(std::string shaderPath, GLenum shaderType) {
     GLuint shader = glCreateShader(shaderType);
     glShaderSource(shader, 1, &shaderSourcePtr, NULL);
 
-    GLint isCompiled = 0;
     glCompileShader(shader);
+
+    GLint isCompiled = 0;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
 
     if (isCompiled == GL_FALSE) {
         GLint maxLength = 0;
@@ -167,23 +169,6 @@ void initUniforms(float t) {
     Eigen::Matrix4f normalMtx = modelMtx.inverse().transpose();
 
     Eigen::Matrix4f cameraMtx = Eigen::Matrix4f::Identity();
-    // Eigen::Matrix4f cameraMtx = Eigen::Matrix4f::Zero();
-
-    // cameraMtx(0, 0) = cameraPosition[0];
-    // cameraMtx(1, 0) = cameraPosition[1];
-    // cameraMtx(2, 0) = cameraPosition[2];
-
-    // // Camera Direction is <0, 0, -1>
-    // cameraMtx(0, 1) = 0.0f;
-    // cameraMtx(1, 1) = 0.0f;
-    // cameraMtx(2, 1) = -1.0f;
-
-    // // Camera Up is <0, 1, 0>
-    // cameraMtx(0, 2) = 0.0f;
-    // cameraMtx(1, 2) = 1.0f;
-    // cameraMtx(2, 2) = 0.0f;
-
-    // cameraMtx(3, 3) = 1.0f;
 
     Eigen::Matrix4f projectionMtx = Eigen::Matrix4f::Zero();
 
