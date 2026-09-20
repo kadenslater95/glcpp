@@ -76,7 +76,7 @@ void initGeometry() {
     float positions[] = {
         -0.5f, -0.5f, 0.0f,
         0.5f, -0.5f, 0.0f,
-        0.0f, 0.5f, 0.0f
+        0.0f, 0.25f, 0.0f
     };
 
     float normals[] = {
@@ -120,29 +120,7 @@ void initGeometry() {
 }
 
 
-void init() {
-    glClearColor(0.0, 0.0, 0.0, 0.0);
-
-    GLuint vertexShader = compileShader(
-        "shaders/perspective.vert",
-        GL_VERTEX_SHADER);
-    GLuint fragmentShader = compileShader(
-        "shaders/blinn_phong.frag",
-        GL_FRAGMENT_SHADER);
-
-    shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    initGeometry();
-}
-
-
-void prepUniforms() {
+void initUniforms() {
     float fov = M_PI / 4.0f;
     float aspect = 1.0f;
     float near = 0.1f;
@@ -241,14 +219,37 @@ void prepUniforms() {
 }
 
 
-void displayFunc() {
-    glClear(GL_COLOR_BUFFER_BIT);
+void init() {
+    glClearColor(0.0, 0.0, 0.0, 0.0);
+
+    GLuint vertexShader = compileShader(
+        "shaders/perspective.vert",
+        GL_VERTEX_SHADER);
+    GLuint fragmentShader = compileShader(
+        "shaders/blinn_phong.frag",
+        GL_FRAGMENT_SHADER);
+
+    shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    initGeometry();
 
     glUseProgram(shaderProgram);
 
-    prepUniforms();
+    initUniforms();
 
     glBindVertexArray(VAO);
+}
+
+
+void displayFunc() {
+    glClear(GL_COLOR_BUFFER_BIT);
+
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     glutSwapBuffers();
