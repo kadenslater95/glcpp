@@ -6,15 +6,19 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 
+#include <Eigen/Dense>
+
+
+GLuint shaderProgram, VAO;
+GLuint VBOs[2];
+GLint modelLoc, cameraLoc, projectionLoc;
+GLint normalMatrixLoc;
 
 GLuint compileShader(const std::string, GLenum);
 void initGeometry();
 void init();
 
 void displayFunc();
-
-
-GLuint shaderProgram, VAO, VBO;
 
 
 int main(int argc, char** argv) {
@@ -64,33 +68,63 @@ GLuint compileShader(std::string shaderPath, GLenum shaderType) {
 
 
 void initGeometry() {
-    float vertices[] = {
+    float positions[] = {
         -0.5f, -0.5f, 0.0f,
         0.5f, -0.5f, 0.0f,
         0.0f, 0.5f, 0.0f
     };
 
+    float normals[] = {
+        0.0f, 0.0f, -1.0f,
+        0.0f, 0.0f, -1.0f,
+        0.0f, 0.0f, -1.0f
+    };
+
+    Eigen::Matrix4f model = Eigen::Matrix4f::Identity();
+
     glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
+    glGenBuffers(1, VBOs);
 
     glBindVertexArray(VAO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void *) 0);
     glEnableVertexAttribArray(0);
 
+    glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(normals), normals, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void *) 0);
+    glEnableVertexAttribArray(1);
+
+    // Unselect any vertex buffer object or attribute pointer array (they start at index 1) as the final cleanup
+    // of initialization so we don't accidentally set something somewhere else unexpectedly
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+
+    modelLoc = glGetUniformLocation(shaderProgram, "uModel");
+    cameraLoc = glGetUniformLocation(shaderProgram, "uCamera");
+    projectionLoc = glGetUniformLocation(shaderProgram, "uProjection");
+
+    normalMatrixLoc = glGetUniformLocation(shaderProgram, "uNormalMatrix");
+
+    glUniformMatrix4fv(
+        modelLoc,
+        1,
+        GL_FALSE,
+        . . .
+    );
 }
 
 
 void init() {
     glClearColor(0.0, 0.0, 0.0, 0.0);
 
-    GLuint vertexShader = compileShader("shader.vert", GL_VERTEX_SHADER);
-    GLuint fragmentShader = compileShader("shader.frag", GL_FRAGMENT_SHADER);
+    GLuint vertexShader = compileShader("shaders/perspective.vert", GL_VERTEX_SHADER);
+    GLuint fragmentShader = compileShader("shaders/blinn_phong.frag", GL_FRAGMENT_SHADER);
 
     shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
