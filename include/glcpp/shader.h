@@ -1,7 +1,7 @@
 // Copyright 2026 Kaden Slater
 
-#ifndef SHADER_H_
-#define SHADER_H_
+#ifndef GLCPP_SHADER_H_
+#define GLCPP_SHADER_H_
 
 #include <GL/glew.h>
 
@@ -15,4 +15,4 @@
 GLuint compileShader(const std::string, GLenum);
 
 
-#endif  // SHADER_H_
+#endif  // GLCPP_SHADER_H_
