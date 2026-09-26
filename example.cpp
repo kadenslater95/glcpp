@@ -15,14 +15,93 @@
 
 GLuint shaderProgram, VAO;
 GLuint VBOs[2];
-GLint modelLoc, normalMatrixLoc, cameraLoc, projectionLoc;
-GLint lightPositionLoc, cameraPositionLoc, lightColorLoc, objectColorLoc;
+GLint modelMtxLoc, normalMtxLoc, cameraMtxLoc, projectionMtxLoc;
+GLint lightPosLoc, cameraPosLoc, lightColorLoc, objectColorLoc;
 
 void initGeometry();
 void init();
 
 void displayFunc();
 void tick(int);
+
+
+class Camera {
+    Eigen::Matrix4f _mtx;
+
+ public:
+    Camera() {
+        this->_mtx = Eigen::Matrix4f::Identity();
+    }
+
+    void getPosition(float position[3]) {
+        position[0] = this->_mtx(3, 0);
+        position[1] = this->_mtx(3, 1);
+        position[2] = this->_mtx(3, 2);
+    }
+
+    void setPosition(float x, float y, float z) {
+        this->_mtx(3, 0) = x;
+        this->_mtx(3, 1) = y;
+        this->_mtx(3, 2) = z;
+    }
+
+    void setDirection(float x, float y, float z) {
+        Eigen::Quaternionf q(1.0f, x, y, z);
+        q = q.normalized();
+
+        Eigen::Matrix3f rot = q.toRotationMatrix();
+
+        this->_mtx.topLeftCorner<3, 3>() = rot;
+    }
+};
+
+
+class Light {
+    float _pos[3];
+    float _color[3];
+
+ public:
+    Light() {
+        this->_pos[0] = 0.0f;
+        this->_pos[1] = 1.0f;
+        this->_pos[2] = 0.0f;
+
+        this->_color[0] = 1.0f;
+        this->_color[1] = 1.0f;
+        this->_color[2] = 1.0f;
+    }
+};
+
+class Scene {
+    Camera* _camera;
+    Light* _light;
+
+    GLuint _shaderProgram;
+
+    GLint _cameraMtxLoc;
+    GLint _lightPosLoc;
+    GLint _lightColorLoc;
+
+ public:
+    Scene(GLuint shaderProgram, Camera* camera, Light* light) {
+        this->_camera = camera;
+        this->_light = light;
+
+        this->_shaderProgram = shaderProgram;
+
+        this->_cameraMtxLoc = glGetUniformLocation(
+            this->_shaderProgram,
+            "uCameraMtx");
+
+        this->_lightPosLoc = glGetUniformLocation(
+            this->_shaderProgram,
+            "uLightPos");
+
+        this->_lightColorLoc = glGetUniformLocation(
+            this->_shaderProgram,
+            "uLightColor");
+    }
+};
 
 
 int main(int argc, char** argv) {
@@ -123,13 +202,21 @@ void initUniforms(float t) {
 
     Eigen::Matrix4f modelMtx = Eigen::Matrix4f::Identity();
 
-    modelMtx.block<3, 3>(0, 0) = Eigen::AngleAxisf(
-        t,
-        Eigen::Vector3f::UnitZ()).toRotationMatrix();
+    // modelMtx.block<3, 3>(0, 0) = Eigen::AngleAxisf(
+    //     t,
+    //     Eigen::Vector3f::UnitZ()).toRotationMatrix();
 
     Eigen::Matrix4f normalMtx = modelMtx.inverse().transpose();
 
     Eigen::Matrix4f cameraMtx = Eigen::Matrix4f::Identity();
+
+    // cameraMtx.block<3, 3>(0, 0) = Eigen::AngleAxisf(
+    //     t,
+    //     Eigen::Vector3f::UnitY()).toRotationMatrix();
+
+    // cameraMtx(2, 3) = 3.0f + 3.0f*sin(t);
+
+    // cameraMtx(0, 2) = sin(0.1*t);
 
     Eigen::Matrix4f projectionMtx = Eigen::Matrix4f::Zero();
 
@@ -141,46 +228,46 @@ void initUniforms(float t) {
     projectionMtx(3, 2) = -1.0f;
     projectionMtx(2, 3) = -2.0f * far * near / (far - near);
 
-    modelLoc = glGetUniformLocation(shaderProgram, "uModel");
-    cameraLoc = glGetUniformLocation(shaderProgram, "uCamera");
-    projectionLoc = glGetUniformLocation(shaderProgram, "uProjection");
+    modelMtxLoc = glGetUniformLocation(shaderProgram, "uModelMtx");
+    cameraMtxLoc = glGetUniformLocation(shaderProgram, "uCameraMtx");
+    projectionMtxLoc = glGetUniformLocation(shaderProgram, "uProjectionMtx");
 
-    normalMatrixLoc = glGetUniformLocation(shaderProgram, "uNormalMatrix");
+    normalMtxLoc = glGetUniformLocation(shaderProgram, "uNormalMtx");
 
     glUniformMatrix4fv(
-        modelLoc,
+        modelMtxLoc,
         1,
         GL_FALSE,
         modelMtx.data());
     glUniformMatrix4fv(
-        cameraLoc,
+        cameraMtxLoc,
         1,
         GL_FALSE,
         cameraMtx.data());
     glUniformMatrix4fv(
-        projectionLoc,
+        projectionMtxLoc,
         1,
         GL_FALSE,
         projectionMtx.data());
 
     glUniformMatrix4fv(
-        normalMatrixLoc,
+        normalMtxLoc,
         1,
         GL_FALSE,
         normalMtx.data());
 
-    cameraPositionLoc = glGetUniformLocation(shaderProgram, "uCameraPosition");
-    lightPositionLoc = glGetUniformLocation(shaderProgram, "uLightPosition");
+    cameraPosLoc = glGetUniformLocation(shaderProgram, "uCameraPos");
+    lightPosLoc = glGetUniformLocation(shaderProgram, "uLightPos");
 
     lightColorLoc = glGetUniformLocation(shaderProgram, "uLightColor");
     objectColorLoc = glGetUniformLocation(shaderProgram, "uObjectColor");
 
     glUniform3fv(
-        cameraPositionLoc,
+        cameraPosLoc,
         1,
         cameraPosition);
     glUniform3fv(
-        lightPositionLoc,
+        lightPosLoc,
         1,
         lightPosition);
 
